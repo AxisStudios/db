@@ -125,11 +125,11 @@ class DbConnector
      * @param string       $sql       SQL statement
      * @param scalar|array $arguments Arguments
      *
-     * @return DbDataSource
+     * @return DbSource
      */
     public function query($sql, $arguments = array())
     {
-        return new DbDataSource($this, $sql, $arguments);
+        return new DbSource($this, $sql, $arguments);
     }
 
     /**
@@ -164,7 +164,7 @@ class DbConnector
      */
     public function getLastInsertId()
     {
-        $ds = new DbDataSource($this, "select last_insert_id()");
+        $ds = new DbSource($this, "select last_insert_id()");
         return "" . $ds[0];
     }
 
@@ -189,7 +189,6 @@ class DbConnector
     private function _exec($sql, $arguments = array())
     {
         $sql = $this->_replaceArguments($sql, $arguments);
-        $this->debug($sql);
 
         // executes the statement
         $result = $this->_conn->query($sql);
