@@ -8,8 +8,9 @@
  */
 namespace soloproyectos\db;
 use \ArrayAccess;
+use \ArrayObject;
 use \Countable;
-use \Iterator;
+use \IteratorAggregate;
 
 /**
  * Class DbSource.
@@ -19,7 +20,7 @@ use \Iterator;
  * @license https://github.com/soloproyectos-php/db/blob/master/LICENSE The MIT License (MIT)
  * @link    https://github.com/soloproyectos-php/db
  */
-class DbSource implements ArrayAccess, Iterator, Countable
+class DbSource implements IteratorAggregate, ArrayAccess, Countable
 {
     /**
      * List of rows.
@@ -38,6 +39,20 @@ class DbSource implements ArrayAccess, Iterator, Countable
     {
         $this->_db = $db;
         $this->_rows = $this->_db->fetchRows($sql, $arguments);
+    }
+    
+    /********************************
+     * Implements IteratorAggregate *
+     ********************************/
+     
+    /**
+    * Gets the iterator.
+    * 
+    * @return ArrayObject
+    */
+    public function getIterator()
+    {
+        return new ArrayObject($this->_rows);
     }
 
     /***************************
@@ -93,54 +108,6 @@ class DbSource implements ArrayAccess, Iterator, Countable
     public function offsetUnset($columnName)
     {
         unset($this->_rows[key($this->_rows)][$columnName]);
-    }
-
-    /************************
-     * Implements Iterator. *
-     ************************/
-
-    /**
-     * Gets the current row.
-     *
-     * This function returns 'false' if the internal pointer has exceeded the end of the list.
-     *
-     * @return array|boolean
-     */
-    public function current()
-    {
-        return current($this->_rows);
-    }
-
-    /**
-     * Gets the next row.
-     *
-     * This function returns 'false' if the internal pointer has reached the end of the list.
-     *
-     * @return array|boolean
-     */
-    public function next()
-    {
-        return next($this->_rows);
-    }
-
-    /**
-     * Gets the internal pointer.
-     *
-     * @return integer
-     */
-    public function key()
-    {
-        return key($this->_rows);
-    }
-
-    /**
-     * Rewinds the internal pointer.
-     *
-     * @return void
-     */
-    public function rewind()
-    {
-        reset($this->_rows);
     }
 
     /**
