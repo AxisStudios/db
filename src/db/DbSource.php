@@ -110,16 +110,6 @@ class DbSource implements IteratorAggregate, ArrayAccess, Countable
         unset($this->_rows[key($this->_rows)][$columnName]);
     }
 
-    /**
-     * Is the current internal pointer valid?
-     *
-     * @return bool
-     */
-    public function valid()
-    {
-        return key($this->_rows) !== null;
-    }
-
     /*************************
      * Implements Countable. *
      *************************/
