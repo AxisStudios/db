@@ -10,6 +10,8 @@ namespace soloproyectos\db;
 use \Mysqli;
 use soloproyectos\db\exception\DbException;
 use soloproyectos\db\DbSource;
+use soloproyectos\event\EventMediator;
+use soloproyectos\text\Text;
 
 /**
  * Class DbConnector.
@@ -26,6 +28,12 @@ class DbConnector
      * @var Mysqli
      */
     private $_conn;
+    
+    /**
+     * Debugger.
+     * @var EventMediator
+     */
+    private $_debugger;
 
     /**
      * Constructor.
@@ -39,6 +47,7 @@ class DbConnector
     public function __construct(
         $dbname, $username = "", $password = "", $server = "localhost", $charset = "utf8"
     ) {
+        $this->_debugger = new EventMediator();
         $this->_conn = @mysqli_connect($server, $username, $password);
         if ($this->_conn === false) {
             throw new DbException("Failed to connect to the database");
@@ -52,6 +61,26 @@ class DbConnector
         }
 
         $this->_conn->set_charset($charset);
+    }
+    
+    /**
+     * Adds a debug listener.
+     * 
+     * @param Callable $listener Listener
+     * @param string   $type     Filter type ('exec' or 'query'. Not required)
+     * 
+     * @return void
+     */
+    public function addDebugListener($listener, $type = "")
+    {
+        if (!Text::isEmpty($type) && !in_array($type, ["exec", "query"])) {
+            throw new DbException("Invalid filter type. Valid filter types are 'exec' and 'query'");
+        }
+        
+        $types = Text::isEmpty($type)? ["exec", "query"]: [$type];
+        foreach ($types as $type) {
+            $this->_debugger->on($type, $listener);
+        }
     }
 
     /**
@@ -95,6 +124,7 @@ class DbConnector
     public function exec($sql, $arguments = array())
     {
         $result = $this->_exec($sql, $arguments);
+        $this->_debugger->trigger("exec", [$sql, $arguments]);
         return $this->_conn->affected_rows;
     }
 
@@ -129,7 +159,9 @@ class DbConnector
      */
     public function query($sql, $arguments = array())
     {
-        return new DbSource($this, $sql, $arguments);
+        $ret = new DbSource($this, $sql, $arguments);
+        $this->_debugger->trigger("query", [$sql, $arguments]);
+        return $ret;
     }
 
     /**
