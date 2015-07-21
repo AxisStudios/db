@@ -123,8 +123,8 @@ class DbConnector
      */
     public function exec($sql, $arguments = array())
     {
-        $result = $this->_exec($sql, $arguments);
         $this->_debugger->trigger("exec", [$sql, $arguments]);
+        $result = $this->_exec($sql, $arguments);
         return $this->_conn->affected_rows;
     }
 
@@ -159,8 +159,8 @@ class DbConnector
      */
     public function query($sql, $arguments = array())
     {
-        $ret = new DbSource($this, $sql, $arguments);
         $this->_debugger->trigger("query", [$sql, $arguments]);
+        $ret = new DbSource($this, $sql, $arguments);
         return $ret;
     }
 
