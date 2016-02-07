@@ -34,6 +34,12 @@ class DbConnector
      * @var EventMediator
      */
     private $_debugger;
+    
+    /**
+     * Debug listener.
+     * @var callable
+     */
+    private $_debugListener;
 
     /**
      * Constructor.
@@ -61,6 +67,49 @@ class DbConnector
         }
 
         $this->_conn->set_charset($charset);
+    }
+    
+    /**
+     * Starts the debugger mechanism.
+     * 
+     * @param callable $listener Debug listener
+     * @param string   $type     Listener type ('query' or 'exec', not required)
+     * 
+     * @return void
+     */
+    public function startDebug($listener = null, $type = "")
+    {
+        if (!Text::isEmpty($type) && !in_array($type, ["exec", "query"])) {
+            throw new DbException("Invalid filter type. Valid filter types are 'exec' and 'query'");
+        }
+        
+        $this->_debugListener = $listener !== null? $listener: function ($sql) {
+            echo "$sql\n";
+        };
+        
+        $types = Text::isEmpty($type)? ["exec", "query"]: [$type];
+        foreach ($types as $type) {
+            $this->_debugger->on($type, $this->_debugListener);
+        }
+    }
+    
+    /**
+     * Stops the debugger mechanism.
+     * 
+     * @param string $type Listener type ('query' or 'exec', not required)
+     * 
+     * @return void
+     */
+    public function stopDebug($type = "")
+    {
+        if (!Text::isEmpty($type) && !in_array($type, ["exec", "query"])) {
+            throw new DbException("Invalid filter type. Valid filter types are 'exec' and 'query'");
+        }
+        
+        $types = Text::isEmpty($type)? ["exec", "query"]: [$type];
+        foreach ($types as $type) {
+            $this->_debugger->off($type, $this->_debugListener);
+        }
     }
     
     /**
