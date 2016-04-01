@@ -11,8 +11,8 @@
     ],
     "require": {
         "php": ">=5.5.0",
-        "soloproyectos-php/event": "*",
-        "soloproyectos-php/text": "*"
+        "soloproyectos-php/event": "~1.0",
+        "soloproyectos-php/text": "~1.0"
     },
     "autoload": {
         "psr-4": {
